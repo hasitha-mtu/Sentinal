@@ -8,15 +8,7 @@ from shapely.geometry import shape
 
 copernicus_user = "adikari.adikari@mycit.ie" # copernicus User
 copernicus_password = "Hasitha@4805" # copernicus Password
-# ft = "POLYGON((0 0, 0 1, 1 1, 1 0, 0 0))"  # WKT Representation of BBOX
-# ft = "POLYGON((-11.365176174401597 55.61826819268245, -11.365176174401597 51.36812029144471, -5.371103152042821 51.36812029144471, -5.371103152042821 55.61826819268245, -11.365176174401597 55.61826819268245))"  # WKT Representation of BBOX
 data_collection = "SENTINEL-2" # Sentinel satellite
-
-today =  date.today()
-today_string = today.strftime("%Y-%m-%d")
-yesterday = today - timedelta(days=1)
-yesterday_string = yesterday.strftime("%Y-%m-%d")
-
 
 
 def get_polygon(path):
@@ -46,12 +38,12 @@ def get_keycloak(username: str, password: str) -> str:
         )
     return r.json()["access_token"]
 
-if __name__ == "__main__":
+def download_data(start_date, end_date):
     ft = get_polygon('config/map.geojson')
     json_ = requests.get(
         f"https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$filter=Collection/Name eq '{data_collection}' "
-        f"and OData.CSC.Intersects(area=geography'SRID=4326;{ft}') and ContentDate/Start gt {yesterday_string}T00:00:00.000Z "
-        f"and ContentDate/Start lt {today_string}T00:00:00.000Z&$count=True&$top=1000").json()
+        f"and OData.CSC.Intersects(area=geography'SRID=4326;{ft}') and ContentDate/Start gt {start_date}T00:00:00.000Z "
+        f"and ContentDate/Start lt {end_date}T00:00:00.000Z&$count=True&$top=1000").json()
     print(f"Request: {json_}")
     p = pd.DataFrame.from_dict(json_["value"])  # Fetch available dataset
     if p.shape[0] > 0:
@@ -80,10 +72,7 @@ if __name__ == "__main__":
                     file = session.get(url, verify=False, allow_redirects=True)
                     dir_path = f"data/{data_collection}/{today_string}"
                     os.makedirs(dir_path, exist_ok=True)
-                    with open(
-                            f"{dir_path}/{feat['properties']['identifier']}.zip",  # location to save zip from copernicus
-                            "wb",
-                    ) as p:
+                    with open( f"{dir_path}/{feat['properties']['identifier']}.zip", "wb", ) as p:
                         print(feat["properties"]["Name"])
                         p.write(file.content)
                 except Exception as e:
@@ -92,18 +81,12 @@ if __name__ == "__main__":
     else:
         print('no data found')
 
-
-
 if __name__ == "__main__":
-    print(f"polygon: {get_polygon('config/map.geojson')}")
-    ft_polygon = get_polygon('config/map.geojson')
-    json_ = requests.get(
-            f"https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$filter=Collection/Name eq '{data_collection}' "
-            f"and OData.CSC.Intersects(area=geography'SRID=4326;{ft_polygon}') and ContentDate/Start gt {yesterday_string}T00:00:00.000Z "
-            f"and ContentDate/Start lt {today_string}T00:00:00.000Z&$count=True&$top=1000").json()
-    print(f"Request: {json_}")
-    p = pd.DataFrame.from_dict(json_["value"])
-    print(f"p: {p}")
+    today = date.today()
+    today_string = today.strftime("%Y-%m-%d")
+    yesterday = today - timedelta(days=1)
+    yesterday_string = yesterday.strftime("%Y-%m-%d")
+    download_data(yesterday_string, today_string)
 
 
 
