@@ -28,8 +28,12 @@ def process_pixel(B02, B03, B04, B08, B8A, B11, B12):
 
 # Load Sentinel-2 bands
 bands = {}
-for band_name in ['B02', 'B03', 'B04', 'B08', 'B8A', 'B11', 'B12']:
-    with rasterio.open(f'path/to/{band_name}.jp2') as src:
+for band_name in ['B02', 'B03', 'B04', 'B8A', 'B11', 'B12']:
+    with rasterio.open(f'config/S2B_MSIL2A_20241118T115359_N0511_R023_T29UMT_20241118T131020.SAFE/GRANULE/L2A_T29UMT_A040232_20241118T115357/IMG_DATA/R20m/T29UMT_20241118T115359_{band_name}_20m.jp2') as src:
+        bands[band_name] = src.read(1)
+
+for band_name in ['B08']:
+    with rasterio.open(f'config/S2B_MSIL2A_20241118T115359_N0511_R023_T29UMT_20241118T131020.SAFE/GRANULE/L2A_T29UMT_A040232_20241118T115357/IMG_DATA/R10m/T29UMT_20241118T115359_{band_name}_10m.jp2') as src:
         bands[band_name] = src.read(1)
 
 # Process the image

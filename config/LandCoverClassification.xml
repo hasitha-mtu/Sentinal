@@ -1,8 +1,9 @@
 <graph id="LandCoverClassification">
+     <version>1.0</version>
     <node id="Read">
         <operator>Read</operator>
         <parameters>
-            <file>YOUR_INPUT_FILE</file>
+            <file>C:\Users\AdikariAdikari\PycharmProjects\Sentinal\config\S2B_MSIL2A_20241118T115359_N0511_R023_T29UMT_20241118T131020.SAFE</file>
         </parameters>
     </node>
     <node id="Resample">
@@ -40,7 +41,7 @@
     <node id="Write">
         <operator>Write</operator>
         <parameters>
-            <file>YOUR_OUTPUT_FILE</file>
+            <file>.</file>
             <format>GeoTIFF</format>
         </parameters>
     </node>
