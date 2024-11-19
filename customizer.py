@@ -36,8 +36,10 @@ for band_name in ['B08']:
     with rasterio.open(f'config/S2B_MSIL2A_20241118T115359_N0511_R023_T29UMT_20241118T131020.SAFE/GRANULE/L2A_T29UMT_A040232_20241118T115357/IMG_DATA/R10m/T29UMT_20241118T115359_{band_name}_10m.jp2') as src:
         bands[band_name] = src.read(1)
 
+print(f"bands : {bands}")
 # Process the image
 outputs = [np.zeros_like(bands['B02']) for _ in range(3)]
+print(f"outputs : {outputs}")
 
 for i in range(bands['B02'].shape[0]):
     for j in range(bands['B02'].shape[1]):
@@ -48,10 +50,13 @@ for i in range(bands['B02'].shape[0]):
         )
         outputs[0][i, j], outputs[1][i, j], outputs[2][i, j] = process_pixel(B02, B03, B04, B08, B8A, B11, B12)
 
+print(f"outputs : {outputs}")
 # Save outputs as GeoTIFF
+file_list = []
 for idx, output in enumerate(outputs):
+    tiff_file = f'data/output/output_{idx+1}.tif'
     with rasterio.open(
-        f'output_{idx+1}.tif', 'w',
+        tiff_file, 'w',
         driver='GTiff',
         height=output.shape[0],
         width=output.shape[1],
@@ -61,3 +66,7 @@ for idx, output in enumerate(outputs):
         transform=src.transform
     ) as dst:
         dst.write(output, 1)
+        file_list.append(tiff_file)
+print(f"file_list : {file_list}")
+# gg = gdal.BuildVRT("", file_list, separate=True)
+# g = gdal.Translate("output.tif", gg, fmt="GTiff")
