@@ -1,0 +1,47 @@
+<graph id="LandCoverClassification">
+    <node id="Read">
+        <operator>Read</operator>
+        <parameters>
+            <file>YOUR_INPUT_FILE</file>
+        </parameters>
+    </node>
+    <node id="Resample">
+        <operator>Resample</operator>
+        <parameters>
+            <targetResolution>10</targetResolution>
+        </parameters>
+    </node>
+    <node id="BandMaths">
+        <operator>BandMaths</operator>
+        <parameters>
+            <targetBands>
+                <targetBand>
+                    <name>NDVI</name>
+                    <type>float32</type>
+                    <expression>(B8 - B4) / (B8 + B4)</expression>
+                </targetBand>
+            </targetBands>
+        </parameters>
+    </node>
+    <node id="Classification">
+        <operator>BandMaths</operator>
+        <parameters>
+            <targetBands>
+                <targetBand>
+                    <name>LandCover</name>
+                    <type>uint8</type>
+                    <expression>
+                        if NDVI > 0.3 then 1 else if NDVI > 0.1 then 2 else 3
+                    </expression>
+                </targetBand>
+            </targetBands>
+        </parameters>
+    </node>
+    <node id="Write">
+        <operator>Write</operator>
+        <parameters>
+            <file>YOUR_OUTPUT_FILE</file>
+            <format>GeoTIFF</format>
+        </parameters>
+    </node>
+</graph>
