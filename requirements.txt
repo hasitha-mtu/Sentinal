@@ -1,5 +1,7 @@
 pandas
+numpy
 geopandas
 shapely
 requests
 sentinelsat
+rasterio
