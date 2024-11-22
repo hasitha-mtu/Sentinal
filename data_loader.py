@@ -67,7 +67,6 @@ def download_data(download_location, area_foot_print, start_date, end_date,
         print(f"Total feature count in product_df : {feature_count}")
         if feature_count > 0:
             try:
-
                 os.makedirs(download_location, exist_ok=True)
                 for i, feature in enumerate(geo_df.iterfeatures()):
                     with multiprocessing.Pool() as pool:
@@ -105,9 +104,7 @@ def unzip_downloaded_files(zip_dir):
     for zip_file_path in glob.glob(f"{zip_dir}/*.zip"):
         print(f"Unzipping file : {zip_file_path}")
         with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-            unzip_file_dir = zip_file_path.rsplit(".", 1)[0]
-            os.makedirs(unzip_file_dir, exist_ok=True)
-            zip_ref.extractall(unzip_file_dir)
+            zip_ref.extractall(zip_dir)
 
 # if __name__ == "__main__":
 #     today = date.today()
