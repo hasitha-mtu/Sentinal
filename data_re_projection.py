@@ -1,9 +1,9 @@
-import numpy as np
+import glob
+import os
+from datetime import date
+
 import rasterio
 from rasterio.warp import calculate_default_transform, reproject, Resampling
-from datetime import date
-import os
-import glob
 
 from utils import get_parent_directories
 

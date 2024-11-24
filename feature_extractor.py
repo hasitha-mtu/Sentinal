@@ -37,7 +37,7 @@ import glob
 import os
 from utils import get_parent_directories
 import matplotlib.pyplot as plt
-import numpy as np
+from datetime import date
 
 
 def create_feature_indexes(input_path, output_path, resolution):
@@ -81,6 +81,7 @@ def create_feature_indexes(input_path, output_path, resolution):
 
     nddi = abs((ndvi - ndwi) / (ndvi + ndwi))
     create_feature_index_image(nddi, "NDDI", b04_band.crs, b04_band.transform, output_path)
+    plot_feature_indexes(ndvi, ndwi, ndbi, nddi)
 
 
 def create_feature_index_image(data, feature_name, crs, transform, output_path):
@@ -126,5 +127,8 @@ def plot_feature_indexes(ndvi, ndwi, ndbi, nddi):
     plt.show()
 
 if __name__ == "__main__":
-    download_dir = f"data/SENTINEL-2/2024-11-22"
-    perform_feature_extraction(download_dir, 10)
+    collection_name = "SENTINEL-2"
+    resolution = 10  # Define the target resolution (e.g., 10 meters)
+    today_string = date.today().strftime("%Y-%m-%d")
+    download_dir = f"data/{collection_name}/{today_string}"
+    perform_feature_extraction(download_dir, resolution)
