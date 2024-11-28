@@ -54,6 +54,13 @@ def download_data(download_location, area_foot_print, start_date, end_date,
         f"and ContentDate/Start gt {start_date}T00:00:00.000Z "
         f"and ContentDate/Start lt {end_date}T00:00:00.000Z&$count=True&$top=1000").json()
 
+    # products_json = requests.get(
+    #     f"https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$filter=Collection/Name eq '{data_collection}' "
+    #     f"and OData.CSC.Intersects(area=geography'SRID=4326;{area_foot_print}') "
+    #     f"and ContentDate/Start gt {start_date}T00:00:00.000Z "
+    #     f"and Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'cloudCover' and att/OData.CSC.DoubleAttribute/Value eq '0.3') "
+    #     f"and ContentDate/Start lt {end_date}T00:00:00.000Z&$count=True&$top=1000").json()
+
     product_df = pd.DataFrame.from_dict(products_json['value'])
     print(f"products_df : {product_df.shape}")
     if product_df.shape[0] > 0:
@@ -110,7 +117,7 @@ def unzip_downloaded_files(zip_dir):
 if __name__ == "__main__":
     today = date.today()
     today_string = today.strftime("%Y-%m-%d")
-    yesterday = today - timedelta(days=1)
+    yesterday = today - timedelta(days=10)
     yesterday_string = yesterday.strftime("%Y-%m-%d")
     selected_area = get_polygon('config/Kenmare-map.geojson')
     collection_name = "SENTINEL-2"  # Sentinel satellite
