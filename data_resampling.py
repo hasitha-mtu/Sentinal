@@ -59,13 +59,13 @@ def resample_images(target_resolution, source_dir, resolution_list=None, band_li
         for band in band_list:
             band_images = get_image_for_the_band(image_dir, target_resolution, band)
             if len(band_images) > 0:
-                shutil.copyfile(band_images[0], f"{resample_dir}/{band}_{target_resolution}.jp2")
+                shutil.copyfile(band_images[0], f"{resample_dir}/{band}_{target_resolution}m.jp2")
                 print(band_images[0])
             else:
                 for resolution in resolution_list:
                     band_images = get_image_for_the_band(image_dir, resolution, band)
                     if len(band_images) > 0:
-                        perform_resampling(band_images[0], f"{resample_dir}/{band}_{target_resolution}.jp2",
+                        perform_resampling(band_images[0], f"{resample_dir}/{band}_{target_resolution}m.jp2",
                                            upscale_factor=resolution/resolution)
                         print(band_images[0])
 
