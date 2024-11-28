@@ -47,7 +47,7 @@ def convert(DL_DIR):
     tiff_paths = convert_to_tiff(jp2_paths)
     return tiff_paths
 
-def merge(tiff_paths, DL_DIR, DEBUG):
+def merge(tiff_paths, output_file, DEBUG):
     """
     We're mergin the raster images.
     """
@@ -58,23 +58,23 @@ def merge(tiff_paths, DL_DIR, DEBUG):
     if DEBUG:
         fig, ax = plt.subplots(figsize=(14, 14))
         show(merged_data, cmap='terrain', ax=ax)
+        plt.show()
 
     merged_meta = raster_list[0].meta.copy()
+    print(f"merged_meta : {merged_meta}")
     merged_meta.update({"driver": "GTiff",
                             "height": merged_data.shape[1],
                             "width": merged_data.shape[2],
                             "transform": out_trans,
-                            "crs": raster_list[0].crs,
-                            "count": 3,
+                            "crs": raster_list[0].crs
+                            # "count": 3,
                             })
     if DEBUG:
         for x in [x.meta for x in raster_list] + [merged_meta]:
             pprint(x)
 
-    MERGED_RAW = os.path.join(DL_DIR, "merged1.tiff")
-    with rasterio.open(MERGED_RAW, mode="w", **merged_meta) as dest:
+    with rasterio.open(output_file, mode="w", **merged_meta) as dest:
         dest.write(merged_data)
-    return MERGED_RAW
 
 def convert_jp2_to_tiff(path):
     print("Converting " + path)
@@ -99,9 +99,32 @@ def perform_jp2_to_tiff_conversion(input_dir):
         for jp2_image in jp2_images:
             convert_jp2_to_tiff(jp2_image)
 
+# if __name__ == "__main__":
+#     today_string = date.today().strftime("%Y-%m-%d")
+#     collection_name = "SENTINEL-2"  # Sentinel satellite
+#     download_dir = f"data/{collection_name}/{today_string}"
+#     perform_jp2_to_tiff_conversion(download_dir)
+
+
 if __name__ == "__main__":
     today_string = date.today().strftime("%Y-%m-%d")
     collection_name = "SENTINEL-2"  # Sentinel satellite
     download_dir = f"data/{collection_name}/{today_string}"
-    perform_jp2_to_tiff_conversion(download_dir)
+    merged_band_dir = f"data/{collection_name}/{today_string}/merged"
+    parent_dirs = get_parent_directories(download_dir)
+    band_list = ['AOT', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B11', 'B12', 'SCL',
+                 'TCI', 'WVP']
+    resolution = 10  # Define the target resolution (e.g., 10 meters)
+    for band in band_list:
+        tiff_path_list = []
+        for parent_dir in parent_dirs:
+            print(f"parent_dir : {parent_dir}")
+            tiff_path = f"{parent_dir}/converted/{band}_{resolution}m.tiff"
+            if os.path.isfile(tiff_path):
+                tiff_path_list.append(tiff_path)
+        print(f"Band {band}m tiff files : {tiff_path_list}")
+        merged_dir = f"{download_dir}/merged"
+        os.makedirs(merged_dir, exist_ok=True)
+        merge(tiff_path_list, f"{merged_dir}/{band}_{resolution}m.tiff", True)
+
 
