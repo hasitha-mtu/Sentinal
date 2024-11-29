@@ -15,38 +15,9 @@ import matplotlib.pyplot as plt
 from utils import get_parent_directories
 import glob
 
+import shapely.wkt
+from sentinelsat.sentinel import read_geojson, geojson_to_wkt
 
-# def select_files(path, pattern):
-#     L = []
-#     for root, dirs, files in os.walk(path):
-#         if len(dirs) == 0:
-#             for f in files:
-#                 if re.match(pattern, f):
-#                     L.append(os.path.join(root, f))
-#     return L
-#
-#
-# def convert_to_tiff(paths):
-#     tiff_paths = []
-#     for p in paths:
-#         print("Converting " + p)
-#         with rasterio.open(p, mode="r") as src:
-#             profile = src.meta.copy()
-#             profile.update(driver="GTiff")
-#
-#             outfile = re.sub(".jp2", ".tiff", p)
-#             with rasterio.open(outfile, 'w', **profile) as dst:
-#                 dst.write(src.read())
-#                 tiff_paths.append(outfile)
-#     return tiff_paths
-#
-# def convert(DL_DIR):
-#     """
-#     Converting the .jp2 images to .tiff
-#     """
-#     jp2_paths = select_files(DL_DIR, "T*.*m.jp2$")
-#     tiff_paths = convert_to_tiff(jp2_paths)
-#     return tiff_paths
 
 def merge_file(tiff_paths, output_file, DEBUG):
     """
@@ -88,7 +59,9 @@ def convert_jp2_to_tiff(path):
             dst.write(src.read())
 
 def perform_jp2_to_tiff_conversion(input_dir):
+    print(f"perform_jp2_to_tiff_conversion|input_dir: {input_dir}")
     parent_dirs = get_parent_directories(input_dir)
+    print(f"perform_jp2_to_tiff_conversion|parent_dirs: {parent_dirs}")
     for parent_dir in parent_dirs:
         resampled_dir = f"{parent_dir}/resampled"
         print(f"resampled_dir : {resampled_dir}")
@@ -132,6 +105,7 @@ def re_project_file(image_path, output_file, dst_crs = 'EPSG:4326'):
 def merge_files(download_dir, resolution, band_list, debug):
     merged_dir = f"{download_dir}/merged"
     os.makedirs(merged_dir, exist_ok=True)
+    parent_dirs = get_parent_directories(download_dir)
     for band in band_list:
         tiff_path_list = []
         for parent_dir in parent_dirs:
@@ -151,15 +125,47 @@ def re_project_files(download_dir, resolution,  dst_crs='EPSG:4326'):
         output_file = re.sub("merged", "reprojected", merged_file)
         re_project_file(merged_file, output_file, dst_crs)
 
+def crop_image(input_file, output_file, aoi_footprint, debug):
+    print(f"crop_image input_file:{input_file}")
+    print(f"crop_image output_file:{output_file}")
+    print(f"crop_image aoi_footprint:{aoi_footprint}")
+    with rasterio.open(input_file) as src:
+        out_image, out_transform = rasterio.mask.mask(src, [shapely.wkt.loads(aoi_footprint)], crop=True)
+        out_meta = src.meta
+        out_meta.update({"driver": "GTiff",
+                         "height": out_image.shape[1],
+                         "width": out_image.shape[2],
+                         "transform": out_transform,
+                         })
+        with rasterio.open(output_file, "w", **out_meta) as dest:
+            dest.write(out_image)
+
+            if debug:
+                import matplotlib.pyplot as plt
+                fig, ax = plt.subplots(figsize=(14, 14))
+                from rasterio.plot import show
+                show(out_image, cmap='terrain', ax=ax)
+                plt.show()
+
+def crop_image_files(download_dir, resolution, polygon_path):
+    reprojected_dir = f"{download_dir}/reprojected"
+    roi_dir = f"{download_dir}/roi"
+    os.makedirs(roi_dir, exist_ok=True)
+    merged_files = glob.glob(f"{reprojected_dir}/*_{resolution}m.tiff")
+    selected_area = geojson_to_wkt(read_geojson(polygon_path))
+    for merged_file in merged_files:
+        output_file = re.sub("reprojected", "roi", merged_file)
+        crop_image(merged_file, output_file, selected_area, True)
+
 if __name__ == "__main__":
     today_string = date.today().strftime("%Y-%m-%d")
     collection_name = "SENTINEL-2"  # Sentinel satellite
     download_dir = f"data/{collection_name}/{today_string}"
     merged_band_dir = f"data/{collection_name}/{today_string}/merged"
-    parent_dirs = get_parent_directories(download_dir)
     band_list = ['AOT', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B11', 'B12', 'SCL',
                  'TCI', 'WVP']
     resolution = 10  # Define the target resolution (e.g., 10 meters)
+    perform_jp2_to_tiff_conversion(download_dir)
     merge_files(download_dir, resolution, band_list, False)
     re_project_files(download_dir, resolution)
 
