@@ -1,4 +1,6 @@
 import os
+from sentinelsat import read_geojson
+from shapely.geometry import shape
 
 def select_directory_list(directory_path, prefix, depth):
     directory_list = []
@@ -20,3 +22,11 @@ def get_parent_directories(download_dir):
         parent_dir_path = f"{download_dir}/{parent_dir}"
         dir_list.append(parent_dir_path)
     return dir_list
+
+def get_polygon(path):
+    geojson = read_geojson(path)
+    polygon_jsons = geojson["features"]
+    polygon_json = polygon_jsons[0]
+    geometry_data = polygon_json["geometry"]
+    polygon = shape(geometry_data)
+    return polygon
