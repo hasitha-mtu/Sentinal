@@ -177,6 +177,7 @@ if __name__ == "__main__":
 #     perform_jp2_to_tiff_conversion(download_dir)
 #     merge_files(download_dir, resolution, band_list, False)
 #     re_project_files(download_dir, resolution)
+#     crop_image_files(download_dir, resolution, 'config/Kenmare-map.geojson')
 
 
 
