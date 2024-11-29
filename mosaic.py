@@ -12,7 +12,7 @@ from rasterio.warp import calculate_default_transform, reproject, Resampling
 from pprint import pprint
 import matplotlib.pyplot as plt
 
-from utils import get_parent_directories
+from utils import get_parent_directories, get_polygon
 import glob
 
 import shapely.wkt
@@ -130,7 +130,8 @@ def crop_image(input_file, output_file, aoi_footprint, debug):
     print(f"crop_image output_file:{output_file}")
     print(f"crop_image aoi_footprint:{aoi_footprint}")
     with rasterio.open(input_file) as src:
-        out_image, out_transform = rasterio.mask.mask(src, [shapely.wkt.loads(aoi_footprint)], crop=True)
+        print(f"crop_image aoi_footprint:{aoi_footprint}")
+        out_image, out_transform = rasterio.mask.mask(src, [aoi_footprint], crop=True)
         out_meta = src.meta
         out_meta.update({"driver": "GTiff",
                          "height": out_image.shape[1],
@@ -152,7 +153,8 @@ def crop_image_files(download_dir, resolution, polygon_path):
     roi_dir = f"{download_dir}/roi"
     os.makedirs(roi_dir, exist_ok=True)
     merged_files = glob.glob(f"{reprojected_dir}/*_{resolution}m.tiff")
-    selected_area = geojson_to_wkt(read_geojson(polygon_path))
+    selected_area = get_polygon(polygon_path)
+    print(f"selected_area : {selected_area}")
     for merged_file in merged_files:
         output_file = re.sub("reprojected", "roi", merged_file)
         crop_image(merged_file, output_file, selected_area, True)
@@ -161,12 +163,20 @@ if __name__ == "__main__":
     today_string = date.today().strftime("%Y-%m-%d")
     collection_name = "SENTINEL-2"  # Sentinel satellite
     download_dir = f"data/{collection_name}/{today_string}"
-    merged_band_dir = f"data/{collection_name}/{today_string}/merged"
-    band_list = ['AOT', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B11', 'B12', 'SCL',
-                 'TCI', 'WVP']
     resolution = 10  # Define the target resolution (e.g., 10 meters)
-    perform_jp2_to_tiff_conversion(download_dir)
-    merge_files(download_dir, resolution, band_list, False)
-    re_project_files(download_dir, resolution)
+    crop_image_files(download_dir, resolution, 'config/Kenmare-map.geojson')
+
+# if __name__ == "__main__":
+#     today_string = date.today().strftime("%Y-%m-%d")
+#     collection_name = "SENTINEL-2"  # Sentinel satellite
+#     download_dir = f"data/{collection_name}/{today_string}"
+#     merged_band_dir = f"data/{collection_name}/{today_string}/merged"
+#     band_list = ['AOT', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B11', 'B12', 'SCL',
+#                  'TCI', 'WVP']
+#     resolution = 10  # Define the target resolution (e.g., 10 meters)
+#     perform_jp2_to_tiff_conversion(download_dir)
+#     merge_files(download_dir, resolution, band_list, False)
+#     re_project_files(download_dir, resolution)
+
 
 
