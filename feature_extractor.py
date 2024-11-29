@@ -97,13 +97,21 @@ def create_feature_index_image(data, feature_name, crs, transform, output_path):
     ) as dst:
         dst.write(data.astype(rasterio.float32), 1)
 
-def perform_feature_extraction(input_dir, resolution):
+def perform_feature_extraction1(input_dir, resolution):
     parent_dirs = get_parent_directories(input_dir)
     for parent_dir in parent_dirs:
         reproject_dir = f"{parent_dir}/reprojected"
         feature_dir = f"{parent_dir}/features"
         os.makedirs(feature_dir, exist_ok=True)
         create_feature_indexes(reproject_dir, feature_dir, resolution)
+
+
+def perform_feature_extraction(input_dir, resolution):
+    roi_dir = f"{input_dir}/roi"
+    feature_dir = f"{input_dir}/features"
+    os.makedirs(feature_dir, exist_ok=True)
+    create_feature_indexes(roi_dir, feature_dir, resolution)
+
 
 def plot_feature_indexes(ndvi, ndwi, ndbi, nddi):
     # Create a figure with multiple subplots

@@ -159,25 +159,25 @@ def crop_image_files(download_dir, resolution, polygon_path):
         output_file = re.sub("reprojected", "roi", merged_file)
         crop_image(merged_file, output_file, selected_area, True)
 
-if __name__ == "__main__":
-    today_string = date.today().strftime("%Y-%m-%d")
-    collection_name = "SENTINEL-2"  # Sentinel satellite
-    download_dir = f"data/{collection_name}/{today_string}"
-    resolution = 10  # Define the target resolution (e.g., 10 meters)
-    crop_image_files(download_dir, resolution, 'config/Kenmare-map.geojson')
-
 # if __name__ == "__main__":
 #     today_string = date.today().strftime("%Y-%m-%d")
 #     collection_name = "SENTINEL-2"  # Sentinel satellite
 #     download_dir = f"data/{collection_name}/{today_string}"
-#     merged_band_dir = f"data/{collection_name}/{today_string}/merged"
-#     band_list = ['AOT', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B11', 'B12', 'SCL',
-#                  'TCI', 'WVP']
 #     resolution = 10  # Define the target resolution (e.g., 10 meters)
-#     perform_jp2_to_tiff_conversion(download_dir)
-#     merge_files(download_dir, resolution, band_list, False)
-#     re_project_files(download_dir, resolution)
 #     crop_image_files(download_dir, resolution, 'config/Kenmare-map.geojson')
+
+if __name__ == "__main__":
+    today_string = date.today().strftime("%Y-%m-%d")
+    collection_name = "SENTINEL-2"  # Sentinel satellite
+    download_dir = f"data/{collection_name}/{today_string}"
+    merged_band_dir = f"data/{collection_name}/{today_string}/merged"
+    band_list = ['AOT', 'B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B11', 'B12', 'SCL',
+                 'TCI', 'WVP']
+    resolution = 10  # Define the target resolution (e.g., 10 meters)
+    perform_jp2_to_tiff_conversion(download_dir)
+    merge_files(download_dir, resolution, band_list, False)
+    re_project_files(download_dir, resolution)
+    crop_image_files(download_dir, resolution, 'config/Kenmare-map.geojson')
 
 
 
