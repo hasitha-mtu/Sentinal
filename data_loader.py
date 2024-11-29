@@ -118,13 +118,13 @@ def download_data1(download_location, area_foot_print, start_date, end_date,
         tile_footprints.append({**x[1], "index": x[0]})
 
     print(tile_footprints[:3])
-    L1 = min_cover_1(tile_footprints)
-    print("{} tiles after the 1st reduction".format(len(L1)))
-    L2 = min_cover_2(L1)
-    print("{} tiles after the 2nd reduction".format(len(L2)))
+    union_polygons = make_union_polygon(tile_footprints)
+    print(f"union_polygons: {union_polygons}")
+    min_area_polygons = get_min_covering(union_polygons)
+    print(f"min_area_polygons: {min_area_polygons}")
     try:
         os.makedirs(download_location, exist_ok=True)
-        for i, feature in enumerate(L2):
+        for i, feature in enumerate(min_area_polygons):
             print(f"{i} => {feature}")
             print(feature['Id'])
             print(feature['identifier'])
@@ -182,22 +182,15 @@ def unzip_downloaded_files(zip_dir):
             zip_ref.extractall(zip_dir)
         os.remove(zip_file_path) # Remove original zip file after extraction
 
-def min_cover_1(U):
+def make_union_polygon(sentinal_polygons):
     """
     This algorithm goes through all polygons and adds them to union_poly only if they're
     not already contained in union_poly.
     (in other words, we're only adding them to union_poly if they can increase the total area)
-
-    performance:
-    input: p1_large_ro_area.geojson with 2046 polygons
-    output: 26 polygons
-    time: O(n) where n is the total number of operations (intersections or unions)
     """
-
-    whole = unary_union([x["geometry"] for x in U])
-    union_poly = U[0]["geometry"]
-    union_parts = [U[0], ]
-    for fp in U[1:]:
+    union_poly = sentinal_polygons[0]["geometry"]
+    union_parts = [sentinal_polygons[0], ]
+    for fp in sentinal_polygons[1:]:
         p = fp["geometry"]
         common = union_poly.intersection(p)
         if p.area - common.area < 0.001:
@@ -207,7 +200,7 @@ def min_cover_1(U):
             union_poly = union_poly.union(p)
     return union_parts
 
-def min_cover_2(U):
+def get_min_covering(union_polygons):
     """
     This algorithm computes a minimal covering set of the entire area.
     This means we're going to eliminate some of the images. We do this
@@ -216,28 +209,19 @@ def min_cover_2(U):
     If by removing the image, the total area is the same, then the image
     can be eliminated since it didn't have any contribution.
     If the area decreases by removing the image, then it can stay.
-
-    performance:
-    input: p1_large_ro_area.geojson cu 2046 poligoane
-    output: 13 polygons
-    time: O(n^2) because we're executing cascaded_union 2046 times, and in the best
-    case we're removing one polygon for each iteration, and cascaded_union is at least
-    linear so we have quadratic complexity.
     """
-    # whole = unary_union([shapely.wkt.loads(shapely.wkt.dumps(x["geometry"])) for x in U])
-    # L = [shapely.wkt.loads(shapely.wkt.dumps(x["geometry"])) for x in U]
 
-    whole = unary_union([x["geometry"] for x in U])
-    L = [x["geometry"] for x in U]
+    whole = unary_union([x["geometry"] for x in union_polygons])
+    L = [x["geometry"] for x in union_polygons]
     V = []
     i = 0
     j = 0
-    while j < len(U):
+    while j < len(union_polygons):
         without = unary_union(L[:i] + L[i + 1:])
         if whole.area - without.area < 0.001:
             L.pop(i)
         else:
-            V.append(U[j])
+            V.append(union_polygons[j])
             i += 1
         j += 1
 

@@ -73,7 +73,7 @@ def perform_jp2_to_tiff_conversion(input_dir):
         for jp2_image in jp2_images:
             convert_jp2_to_tiff(jp2_image)
 
-def re_project_file(image_path, output_file, dst_crs = 'EPSG:4326'):
+def re_project_file(image_path, output_file, dst_crs):
     """
     Reprojecting the images to  EPSG:4326
     """
