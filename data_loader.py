@@ -2,14 +2,12 @@ import glob
 import multiprocessing
 import os
 import zipfile
+
 import geopandas as gpd
-import matplotlib.pyplot as plt
 import pandas as pd
-import rasterio
 import requests
 from shapely.geometry import shape
 from shapely.ops import unary_union
-import rasterio.plot
 
 copernicus_user = "adikari.adikari@mycit.ie"  # copernicus User
 copernicus_password = "Hasitha@4805"  # copernicus Password
@@ -226,18 +224,6 @@ def get_min_covering(union_polygons):
         if j % 20 == 0:
             print(i, j, len(L))
     return V
-
-def view_tiff(file_path, year):
-    tiff = rasterio.open(file_path)
-    rasterio.plot.show(tiff, title = f"Land Cover {year}")
-
-if __name__ == "__main__":
-    file_path_2006 = "data/land_cover/2006/U2012_CLC2006_V2020_20u1.tif"
-    view_tiff(file_path_2006, 2006)
-    file_path_2012 = "data/land_cover/2012/U2018_CLC2012_V2020_20u1_raster100m.tif"
-    view_tiff(file_path_2012, 2012)
-    file_path_2018 = "data/land_cover/2018/U2018_CLC2018_V2020_20u1.tif"
-    view_tiff(file_path_2018, 2018)
 
 # if __name__ == "__main__":
 #     today = date.today()
