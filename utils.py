@@ -1,14 +1,14 @@
+import json
 import os
 
-from matplotlib.pyplot import title
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import pandas as pd
+import rasterio.plot
+from matplotlib.colors import ListedColormap
 from sentinelsat import read_geojson
 from shapely.geometry import shape
-import json
-import pandas as pd
-from matplotlib.colors import ListedColormap
-import matplotlib.patches as mpatches
-import rasterio.plot
-import matplotlib.pyplot as plt
+
 
 def load_cmap(file_path = "config/color_map.json"):
     lc = json.load(open(file_path))
@@ -40,6 +40,11 @@ def view_tiff(file_path, title="Land Cover"):
     ax.legend(**legend)
     rasterio.plot.show(tiff, cmap=cmap, ax=ax, title=title)
     plt.show()
+
+def split_tiff(file_path, size=(512, 512)):
+    tiff = rasterio.open(file_path)
+    print(tiff.shape)
+
 
 def select_directory_list(directory_path, prefix, depth):
     directory_list = []
@@ -76,4 +81,4 @@ if __name__ == "__main__":
     # file_path_2012 = "data/land_cover/2012/U2018_CLC2012_V2020_20u1_raster100m.tif"
     # view_tiff(file_path_2012, 2012)
     file_path_2018 = "data/land_cover/2018/U2018_CLC2018_V2020_20u1.tif"
-    view_tiff(file_path_2018)
+    split_tiff(file_path_2018)
