@@ -6,7 +6,6 @@ from datetime import date
 import rasterio
 import rasterio.mask
 import rasterio.merge
-from rasterio.plot import show
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 from pprint import pprint
@@ -14,9 +13,7 @@ import matplotlib.pyplot as plt
 
 from utils import get_parent_directories, get_polygon
 import glob
-
-import shapely.wkt
-from sentinelsat.sentinel import read_geojson, geojson_to_wkt
+from rasterio.plot import show
 
 
 def merge_file(tiff_paths, output_file, DEBUG):
@@ -142,9 +139,7 @@ def crop_image(input_file, output_file, aoi_footprint, debug):
             dest.write(out_image)
 
             if debug:
-                import matplotlib.pyplot as plt
                 fig, ax = plt.subplots(figsize=(14, 14))
-                from rasterio.plot import show
                 show(out_image, cmap='terrain', ax=ax)
                 plt.show()
 

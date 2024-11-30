@@ -1,17 +1,15 @@
-from datetime import date, timedelta
-import requests
-import pandas as pd
-import geopandas as gpd
-import os
-
-import shapely.wkt
-from shapely.geometry import shape
-import multiprocessing
 import glob
+import multiprocessing
+import os
 import zipfile
-
-from utils import get_polygon
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import pandas as pd
+import rasterio
+import requests
+from shapely.geometry import shape
 from shapely.ops import unary_union
+import rasterio.plot
 
 copernicus_user = "adikari.adikari@mycit.ie"  # copernicus User
 copernicus_password = "Hasitha@4805"  # copernicus Password
@@ -229,19 +227,30 @@ def get_min_covering(union_polygons):
             print(i, j, len(L))
     return V
 
+def view_tiff(file_path, year):
+    tiff = rasterio.open(file_path)
+    rasterio.plot.show(tiff, title = f"Land Cover {year}")
 
 if __name__ == "__main__":
-    today = date.today()
-    today_string = today.strftime("%Y-%m-%d")
-    yesterday = today - timedelta(days=10)
-    yesterday_string = yesterday.strftime("%Y-%m-%d")
-    selected_area = get_polygon('config/Kenmare-map.geojson')
-    collection_name = "SENTINEL-2"  # Sentinel satellite
-    download_dir = f"data/{collection_name}/{today_string}"
-    print(f"download_dir : {download_dir}")
-    download_data1(download_dir, selected_area, yesterday_string,
-                  today_string, data_collection=collection_name)
-    unzip_downloaded_files(download_dir)
+    file_path_2006 = "data/land_cover/2006/U2012_CLC2006_V2020_20u1.tif"
+    view_tiff(file_path_2006, 2006)
+    file_path_2012 = "data/land_cover/2012/U2018_CLC2012_V2020_20u1_raster100m.tif"
+    view_tiff(file_path_2012, 2012)
+    file_path_2018 = "data/land_cover/2018/U2018_CLC2018_V2020_20u1.tif"
+    view_tiff(file_path_2018, 2018)
+
+# if __name__ == "__main__":
+#     today = date.today()
+#     today_string = today.strftime("%Y-%m-%d")
+#     yesterday = today - timedelta(days=10)
+#     yesterday_string = yesterday.strftime("%Y-%m-%d")
+#     selected_area = get_polygon('config/Kenmare-map.geojson')
+#     collection_name = "SENTINEL-2"  # Sentinel satellite
+#     download_dir = f"data/{collection_name}/{today_string}"
+#     print(f"download_dir : {download_dir}")
+#     download_data1(download_dir, selected_area, yesterday_string,
+#                   today_string, data_collection=collection_name)
+#     unzip_downloaded_files(download_dir)
 
 # if __name__ == "__main__":
 #     collection_name = "SENTINEL-2"  # Sentinel satellite
