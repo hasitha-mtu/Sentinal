@@ -8,6 +8,7 @@ import rasterio.plot
 from matplotlib.colors import ListedColormap
 from sentinelsat import read_geojson
 from shapely.geometry import shape
+from rasterio.mask import mask
 
 
 def load_cmap(file_path = "config/color_map.json"):
@@ -41,9 +42,19 @@ def view_tiff(file_path, title="Land Cover"):
     rasterio.plot.show(tiff, cmap=cmap, ax=ax, title=title)
     plt.show()
 
-def split_tiff(file_path, size=(512, 512)):
-    tiff = rasterio.open(file_path)
-    print(tiff.shape)
+def clip_tiff(tiff_path, polygon_path):
+    roi_polygon = get_polygon(polygon_path)
+    print(f"roi_polygon: {roi_polygon}")
+    with rasterio.open(tiff_path) as src:
+        out_image, out_transform = mask(src, [shape(roi_polygon)], crop=True)
+        out_meta = src.meta.copy()
+        out_meta.update({"driver": "GTiff",
+                         "height": out_image.shape[1],
+                         "width": out_image.shape[2],
+                         "transform": out_transform})
+
+        with rasterio.open('clipped_raster.tif', 'w', **out_meta) as dest:
+            dest.write(out_image)
 
 
 def select_directory_list(directory_path, prefix, depth):
@@ -80,5 +91,8 @@ if __name__ == "__main__":
     # view_tiff(file_path_2006, 2006)
     # file_path_2012 = "data/land_cover/2012/U2018_CLC2012_V2020_20u1_raster100m.tif"
     # view_tiff(file_path_2012, 2012)
-    file_path_2018 = "data/land_cover/2018/U2018_CLC2018_V2020_20u1.tif"
-    split_tiff(file_path_2018)
+    # file_path = "data/land_cover/cork/U2018_CLC2018_V2020_20u1.tif"
+    # file_path = "data/land_cover/cork/U2012_CLC2006_V2020_20u1.tif"
+    # geo_json = "config/cork.geojson"
+    # clip_tiff(file_path, geo_json)
+    view_tiff("data/land_cover/cork/clipped_raster.tif")
